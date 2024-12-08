@@ -1,0 +1,42 @@
+@main.route('/download/<file_format>', methods=['GET', 'POST'])
+@login_required
+def download_data(file_format):
+    """
+    Download filtered commodity data in CSV or Excel format.
+    """
+    # Parse filter parameters from the form submission
+    start_date = request.args.get('start_date')
+    end_date = request.args.get('end_date')
+    commodity_name = request.args.get('commodity_name')
+
+    # Query filtered data
+    query = Commodity.query
+    if start_date:
+        query = query.filter(Commodity.date >= start_date)
+    if end_date:
+        query = query.filter(Commodity.date <= end_date)
+    if commodity_name:
+        query = query.filter(Commodity.name.ilike(f"%{commodity_name}%"))
+
+    commodities = query.all()
+    data = pd.DataFrame(
+        [(c.name, c.price, c.date) for c in commodities],
+        columns=['Name', 'Price', 'Date']
+    )
+
+    # Export data in the requested format
+    if file_format == 'csv':
+        response = Response(data.to_csv(index=False), mimetype='text/csv')
+        response.headers['Content-Disposition'] = 'attachment; filename=commodity_data.csv'
+        return response
+    elif file_format == 'excel':
+        output = pd.ExcelWriter('/tmp/commodity_data.xlsx', engine='xlsxwriter')
+        data.to_excel(output, index=False, sheet_name='Commodities')
+        output.close()
+
+        response = Response(open('/tmp/commodity_data.xlsx', 'rb').read(), 
+                            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response.headers['Content-Disposition'] = 'attachment; filename=commodity_data.xlsx'
+        return response
+    else:
+        return "Invalid file format requested", 400
