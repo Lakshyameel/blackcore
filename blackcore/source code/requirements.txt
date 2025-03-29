@@ -1,6 +1,0 @@
-# Sample Code
-Flask
-SQLAlchemy
-pandas
-requests
-matplotlib
