@@ -1,0 +1,25 @@
+import random
+
+def flip_coin():
+    result = random.choice(['heads', 'tails'])
+    return result
+
+def main():
+    print("Welcome to the Coin Flip Game!")
+    guess = input("Guess (heads or tails): ").lower()
+
+    if guess not in ['heads', 'tails']:
+        print("Invalid choice. Please choose 'heads' or 'tails'.")
+        return
+
+    print("Flipping the coin...")
+    outcome = flip_coin()
+    print(f"The result is: {outcome}")
+
+    if guess == outcome:
+        print("🎉 You guessed correctly!")
+    else:
+        print("❌ Sorry, you guessed wrong.")
+
+if __name__ == "__main__":
+    main()
